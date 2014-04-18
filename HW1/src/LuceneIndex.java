@@ -1,7 +1,14 @@
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+
+import javax.print.Doc;
+import javax.swing.text.Document;
+
 import org.apache.lucene.index.IndexWriter;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 public class LuceneIndex{
 	
@@ -34,9 +41,21 @@ public class LuceneIndex{
 		        String thisTRECID=htmlRecord.getTargetTrecID();
 		        String thisTargetURI=htmlRecord.getTargetURI();
 		        String thisContentString = thisWarcRecord.getContentUTF8();
+		        org.jsoup.nodes.Document content = Jsoup.parse(thisContentString);
+		        org.jsoup.nodes.Document body = Jsoup.parseBodyFragment(thisContentString);
+		        Elements paragraphs = body.select("p");
+		        String bodyString = body.body().text();
+		        for (Element p : paragraphs)
+		        {
+		        	bodyString = p.text();
+		        }
+		        System.out.println(body);
+		        String titleString = content.title();
+		        
 		        // print our data
 		        System.out.println(thisTRECID + " : " + thisTargetURI);
-		        System.out.println(thisContentString);
+		        System.out.println(titleString);
+		        System.out.println(bodyString);
 		      }
 		    }
 		    inStream.close();

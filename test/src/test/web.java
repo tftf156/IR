@@ -1,10 +1,12 @@
 package test;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Date;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -25,6 +27,8 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
 
 public class web {
     // 数据源路径
@@ -40,14 +44,60 @@ public class web {
      * IndexWriter 用来操作（增、删、改）索引库的
      */
     public static void createIndex2() throws Exception {
-        Directory fsDir = FSDirectory.getDirectory(indexpath);
+    	int count = 0;
+		FileInputStream fileInputStream = new FileInputStream("../../file/08.warc");
+		// cast to a data input stream
+	    DataInputStream inStream=new DataInputStream(fileInputStream);
+	    Directory fsDir = FSDirectory.getDirectory("../../index");
         //1、启动时读取
         Directory ramDir = new RAMDirectory(fsDir);
         
         // 运行程序时操作ramDir
         IndexWriter ramIndexWriter = new IndexWriter(ramDir, analyzer, MaxFieldLength.LIMITED);
         
-        for (int i=0;i<2;i++)
+	    // iterate through our stream
+	    WarcRecord thisWarcRecord;
+	    while ((thisWarcRecord=WarcRecord.readNextWarcRecord(inStream))!=null) {
+		      // see if it's a response record
+		      if (thisWarcRecord.getHeaderRecordType().equals("response")) {
+		        // it is - create a WarcHTML record
+		        WarcHTMLResponseRecord htmlRecord=new WarcHTMLResponseRecord(thisWarcRecord);
+		        // get our TREC ID and target URI
+		        String thisTRECID=htmlRecord.getTargetTrecID();
+		        String thisTargetURI=htmlRecord.getTargetURI();
+		        String thisContentString = thisWarcRecord.getContentUTF8();
+		        org.jsoup.nodes.Document content = Jsoup.parse(thisContentString);
+
+		        String titleString = content.title();
+		        
+		        // print our data
+		        //System.out.println(thisTRECID + " : " + thisTargetURI);
+		        //System.out.println(titleString);
+		        
+			    org.jsoup.nodes.Document doc = Jsoup.parseBodyFragment(thisContentString);
+			    Element body = doc.body();
+			    String bodyTextString = body.text();
+			    String[] bodySplit = bodyTextString.split(" Content-Length: ");
+			    String bodyText = bodySplit[1];
+			    bodySplit = bodySplit[1].split(" ");
+			    bodyText = bodyText.substring(bodySplit[0].length() + 1 + titleString.length() + 1, bodyText.length());
+			    //System.out.println(bodyText);
+			    
+			    // 添加 Document
+		        Document document = new Document();
+		        //文件名称
+		        document.add(new Field("URL", thisTargetURI, Store.YES, Index.ANALYZED));
+		        //检索到的内容
+		        document.add(new Field("Title", titleString, Store.YES, Index.ANALYZED));
+		        //文件大小
+		        document.add(new Field("content", bodyText, Store.YES, Index.ANALYZED));
+		        ramIndexWriter.addDocument(document);
+		      //break;
+		      }
+		    }
+		    inStream.close();
+        
+        /*for (int i=0;i<2;i++)
         {
         //数据源
 	        File file = new File(dspath[i]);
@@ -62,7 +112,7 @@ public class web {
 	        //检索到的文件位置
 	        doc.add(new Field("path", file.getAbsolutePath(), Store.YES, Index.NOT_ANALYZED));
 	        ramIndexWriter.addDocument(doc);
-        }
+        }*/
         ramIndexWriter.close();
         
         //2、退出时保存
@@ -75,20 +125,7 @@ public class web {
         
         fsIndexWriter.close();
     }
-    
-    /**
-     * 优化操作
-     * 
-     * @throws Exception
-     */
-    public void createIndex3() throws Exception{
-        Directory fsDir = FSDirectory.getDirectory(indexpath);
-        IndexWriter fsIndexWriter = new IndexWriter(fsDir, analyzer, MaxFieldLength.LIMITED);
         
-        fsIndexWriter.optimize();
-        fsIndexWriter.close();
-    }
-    
     /**
      * 搜索
      * 
@@ -99,7 +136,7 @@ public class web {
         //String queryString = "document";
 
         // 1，把要搜索的文本解析为 Query
-        String[] fields = { "name", "content" };
+        String[] fields = { "Title", "content" };
         QueryParser queryParser = new MultiFieldQueryParser(fields, analyzer);
         Query query = queryParser.parse(queryString);
 
@@ -116,10 +153,10 @@ public class web {
             // 根据编号取出相应的文档
             Document doc = indexSearcher.doc(index);
             System.out.println("------------------------------");
-            System.out.println("name = " + doc.get("name"));
-            System.out.println("content = " + doc.get("content"));
-            System.out.println("size = " + NumberTools.stringToLong(doc.get("size")));
-            System.out.println("path = " + doc.get("path"));
+            System.out.println("URL = " + doc.get("URL"));
+            System.out.println("Title = " + doc.get("Title"));
+            /*System.out.println("size = " + NumberTools.stringToLong(doc.get("size")));
+            System.out.println("path = " + doc.get("path"));*/
         }
     }
 
@@ -143,8 +180,11 @@ public class web {
     public static void main(String args[])throws IOException 
 	  {
     	try {
+    		Date start = new Date();
 			createIndex2();
-			search("task");
+			Date end = new Date(); 
+		    System.out.println("建立索引用時"+(end.getTime()-start.getTime())+"毫杪");
+			search("Adult");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

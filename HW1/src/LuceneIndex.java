@@ -48,8 +48,19 @@ public class LuceneIndex{
 		        // print our data
 		        System.out.println(thisTRECID + " : " + thisTargetURI);
 		        System.out.println(titleString);
+		        
+			    org.jsoup.nodes.Document doc = Jsoup.parseBodyFragment(thisContentString);
+			    Element body = doc.body();
+			    String bodyTextString = body.text();
+			    String[] bodySplit = bodyTextString.split(" Content-Length: ");
+			    String bodyText = bodySplit[1];
+			    bodySplit = bodySplit[1].split(" ");
+			    bodyText = bodyText.substring(bodySplit[0].length() + 1, bodyText.length());
+			    System.out.println(bodyText);
+		      break;
 		      }
 		    }
 		    inStream.close();
+		    
 	  } 
 }

@@ -42,20 +42,12 @@ public class LuceneIndex{
 		        String thisTargetURI=htmlRecord.getTargetURI();
 		        String thisContentString = thisWarcRecord.getContentUTF8();
 		        org.jsoup.nodes.Document content = Jsoup.parse(thisContentString);
-		        org.jsoup.nodes.Document body = Jsoup.parseBodyFragment(thisContentString);
-		        Elements paragraphs = body.select("p");
-		        String bodyString = body.body().text();
-		        for (Element p : paragraphs)
-		        {
-		        	bodyString = p.text();
-		        }
-		        System.out.println(body);
+
 		        String titleString = content.title();
 		        
 		        // print our data
 		        System.out.println(thisTRECID + " : " + thisTargetURI);
 		        System.out.println(titleString);
-		        System.out.println(bodyString);
 		      }
 		    }
 		    inStream.close();

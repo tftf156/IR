@@ -16,8 +16,7 @@ public class LuceneIndex{
 	  public static void main(String args[])throws IOException 
 	  { 
 		  int count = 0;
-		  String inputWarcFile="file/08.warc";
-		  FileInputStream fileInputStream = new FileInputStream("file/08.warc");
+		  FileInputStream fileInputStream = new FileInputStream("../../file/08.warc");
 		    // open our gzip input stream
 		    //GZIPInputStream gzInputStream=new GZIPInputStream(new FileInputStream(inputWarcFile));
 		    

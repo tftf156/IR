@@ -63,11 +63,5 @@ public class LuceneSearch {
           	System.out.println("path = " + doc.get("path"));*/
 			count++;
 		}
-	}
-  
-	public static void main(String[] args) throws Exception
-	{
-	
-	}
-  
+	}  
 }

@@ -23,15 +23,18 @@ import org.jsoup.select.Elements;
 public class LuceneIndex{
 	
 	private IndexWriter writer = null ; 
-	static String filePath = "../../file/08.warc";
-	static String indexPath = "../../index";
-	static Analyzer analyzer = new StandardAnalyzer();
+	String filePath;
+	String indexPath;
+	Analyzer analyzer;
 	  
-	public LuceneIndex() 
+	public LuceneIndex(String filePath, String indexPath, Analyzer analyzer) 
 	{ 
+		this.filePath = filePath;
+		this.indexPath = indexPath;
+		this.analyzer = analyzer;
 	} 
 	  
-	public static void createIndex() throws Exception {
+	public void createIndex() throws Exception {
 		FileInputStream fileInputStream = new FileInputStream(filePath);
 		// cast to a data input stream
 		DataInputStream inStream=new DataInputStream(fileInputStream);
@@ -95,19 +98,4 @@ public class LuceneIndex{
 	        
 	    fsIndexWriter.close();
 	}
-	  
-	public static void main(String args[])throws IOException 
-	{ 
-		LuceneSearch luceneSearch = new LuceneSearch(indexPath, analyzer);
-		try {
-			Date start = new Date();
-			createIndex();
-			Date end = new Date(); 
-		    System.out.println("建立索引用時"+(end.getTime()-start.getTime())+"毫杪");
-			luceneSearch.search("Adult");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	} 
 }

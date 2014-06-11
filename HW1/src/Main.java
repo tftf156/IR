@@ -1,8 +1,10 @@
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -13,9 +15,12 @@ import java.util.Date;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -24,12 +29,14 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 public class Main{
 	
 	static String indexPath = "../../index";
+	static LuceneSearch luceneSearch;
 	static Analyzer analyzer = new StandardAnalyzer();
 	private static JFrame frame;
 	static JButton searchButton = new JButton("Search");
 	static JTextField searchTextField = new JTextField();
 	static JLabel keywordRankingListJLabel = new JLabel("");
 	static ArrayList<KeywordRanking> keywordRankingArrayList = new ArrayList<KeywordRanking>();
+	static AutoSuggestor autoSuggestor;
 	
 	class KeywordRanking  {  
 	       String keyword;  
@@ -39,6 +46,7 @@ public class Main{
 	public static void main(String args[])throws IOException { 
 		Main main = new Main();
 		
+		luceneSearch = new LuceneSearch(indexPath, analyzer);
 		frame = new JFrame();
 		frame.setSize(600, 600);
         frame.setLayout(new GridBagLayout());
@@ -78,6 +86,29 @@ public class Main{
         
         searchButton.addActionListener(main.new InputListener());
         frame.setVisible(true);
+        
+        autoSuggestor = new AutoSuggestor(searchTextField, frame, null, Color.WHITE.brighter(), Color.BLUE, Color.RED, 0.75f) {
+            @Override
+            boolean wordTyped(String typedWord) {
+
+                //create list for dictionary this in your case might be done via calling a method which queries db and returns results as arraylist
+            	try {
+            		ArrayList<String> words = luceneSearch.searchArray(searchTextField.getText());
+            		for(String word : words)
+            		{
+            			System.out.println(word);
+            		}
+                    setDictionary(words);
+    			} catch (Exception e) {
+    				// TODO Auto-generated catch block
+    				e.printStackTrace();
+    			}
+                
+                //addToDictionary("bye");//adds a single word
+
+                return super.wordTyped(typedWord);//now call super to check for any matches against newest dictionary
+            }
+        };
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -130,7 +161,6 @@ public class Main{
 	
 	class InputListener implements ActionListener, CaretListener {
 		String keyword = new String();
-		 LuceneSearch luceneSearch = new LuceneSearch(indexPath, analyzer);
 	    public void actionPerformed(ActionEvent event) {
 	    	try {
 	            keyword = searchTextField.getText();
@@ -147,4 +177,6 @@ public class Main{
 	        
 	    } 
 	}
+	
+	
 }

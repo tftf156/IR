@@ -57,22 +57,23 @@ public class HtmlViewer
 //	                          + "</body>\n";
 	        
 	        // create a document, set it on the jeditorpane, then add the html
+	        //System.out.println(htmlString);
 	        Document doc = kit.createDefaultDocument();
 	        jEditorPane.setDocument(doc);
 	        jEditorPane.setText(htmlString);
 
 	        // now add it all to a frame
-	        JFrame j = new JFrame("HtmlEditorKit Test");
+	        JFrame j = new JFrame("Html Viewer");
 	        j.getContentPane().add(scrollPane, BorderLayout.CENTER);
 
 	        // make it easy to close the application
-	        j.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	        //j.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	        
 	        // display the frame
 	        j.setSize(new Dimension(500,500));
 	        
 	        // pack it, if you prefer
-	        //j.pack();
+	        j.pack();
 	        
 	        // center the jframe, then make it visible
 	        j.setLocationRelativeTo(null);

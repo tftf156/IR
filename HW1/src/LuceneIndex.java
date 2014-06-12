@@ -74,16 +74,13 @@ public class LuceneIndex{
 			    String bodyText = bodySplit[1];
 			    bodySplit = bodySplit[1].split(" ");
 			    bodyText = bodyText.substring(bodySplit[0].length() + 1 + titleString.length() + 1, bodyText.length());
-			    //System.out.println(bodyText);
+			    System.out.println(bodyText);
 				    
 			    // 添加 Document
 			    org.apache.lucene.document.Document document = new org.apache.lucene.document.Document();
-			    //文件名称
 			    document.add(new StoredField("URL", thisTargetURI));
-			    //检索到的内容
 			    document.add(new TextField("Title", titleString, Store.YES));
-			    //文件大小
-			    document.add(new StoredField("content", bodyText));
+			    document.add(new TextField("content", bodyText, Store.YES));
 			    document.add(new StoredField("html", thisContentString));
 			    ramIndexWriter.addDocument(document);
 			    thisWarcRecord = null;

@@ -95,11 +95,7 @@ public class Main{
 
 		                //create list for dictionary this in your case might be done via calling a method which queries db and returns results as arraylist
 		            	try {
-		            		ArrayList<String> words = luceneSearch.searchArray(searchTextField.getText());
-		            		for(String word : words)
-		            		{
-		            			System.out.println(word);
-		            		}
+		            		ArrayList<String> words = luceneSearch.searchArray(typedWord);
 		                    setDictionary(words);
 		    			} catch (Exception e) {
 		    				// TODO Auto-generated catch block

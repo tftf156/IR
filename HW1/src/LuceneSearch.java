@@ -1,16 +1,11 @@
 
-import java.awt.Button;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.Console;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.Scanner;
-
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -20,7 +15,6 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
 import org.apache.lucene.queryParser.QueryParser;
@@ -103,30 +97,36 @@ public class LuceneSearch {
 	}
 	public ArrayList<String> searchArray(String queryString) throws Exception {
 		ArrayList<String> words = new ArrayList<>();
-		//请求字段
-		//String queryString = "document";
+		if(!queryString.equals(""))
+		{
+			//请求字段
+			//String queryString = "document";
 
-		// 1，把要搜索的文本解析为 Query
-		String[] fields = { "Title", "content" };
-		QueryParser queryParser = new MultiFieldQueryParser(fields, analyzer);
-		Query query = queryParser.parse(queryString);
+			// 1，把要搜索的文本解析为 Query
+			String[] fields = { "Title", "content" };
+			QueryParser queryParser = new MultiFieldQueryParser(fields, analyzer);
+			Query query = queryParser.parse(queryString);
 
-		// 2，进行查询，从索引库中查找
-		IndexSearcher indexSearcher = new IndexSearcher(indexpath);
-		Filter filter = null;
-		TopDocs topDocs = indexSearcher.search(query, filter, 10);
+			// 2，进行查询，从索引库中查找
+			IndexSearcher indexSearcher = new IndexSearcher(indexpath);
+			Filter filter = null;
+			TopDocs topDocs = indexSearcher.search(query, filter, 10);
 
-		int count = 1;
-		// 3，打印结果
-		for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-			// 文档内部编号
-			int index = scoreDoc.doc; 
-			// 根据编号取出相应的文档
-			Document doc = indexSearcher.doc(index);
-			words.add(doc.get("Title"));
-			/*System.out.println("size = " + NumberTools.stringToLong(doc.get("size")));
-          	System.out.println("path = " + doc.get("path"));*/
-			count++;
+			int count = 1;
+			// 3，打印结果
+			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+				// 文档内部编号
+				int index = scoreDoc.doc; 
+				// 根据编号取出相应的文档
+				Document doc = indexSearcher.doc(index);
+				if(!doc.get("Title").equals(""))
+				{
+					words.add(doc.get("Title"));
+				}
+				/*System.out.println("size = " + NumberTools.stringToLong(doc.get("size")));
+	          	System.out.println("path = " + doc.get("path"));*/
+				count++;
+			}
 		}
 		return words;
 	}

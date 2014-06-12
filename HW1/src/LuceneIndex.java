@@ -3,9 +3,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Date;
 
-import javax.print.Doc;
-import javax.swing.text.Document;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field;
@@ -18,11 +15,9 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class LuceneIndex{
 	
-	private IndexWriter writer = null ; 
 	static String filePath = "../../file/08.warc";
 	static String indexPath = "../../index";
 	static Analyzer analyzer = new StandardAnalyzer();
@@ -58,12 +53,11 @@ public class LuceneIndex{
 			if (thisWarcRecord.getHeaderRecordType().equals("response")) {
 				// it is - create a WarcHTML record
 				WarcHTMLResponseRecord htmlRecord=new WarcHTMLResponseRecord(thisWarcRecord);
-				// get our TREC ID and target URI
-			 	String thisTRECID=htmlRecord.getTargetTrecID();
 				String thisTargetURI=htmlRecord.getTargetURI();
 				String thisContentString = thisWarcRecord.getContentUTF8();
 				org.jsoup.nodes.Document content = Jsoup.parse(thisContentString);
-	
+				//System.out.print(thisContentString);
+				
 				String titleString = content.title();
 				        
 				// print our data
@@ -87,7 +81,15 @@ public class LuceneIndex{
 			    document.add(new Field("Title", titleString, Store.YES, Index.ANALYZED));
 			    //文件大小
 			    document.add(new Field("content", bodyText, Store.YES, Index.ANALYZED));
+			    document.add(new Field("html", thisContentString, Store.YES, Index.ANALYZED));
 			    ramIndexWriter.addDocument(document);
+			    thisWarcRecord = null;
+				content = null;
+				document = null;
+				bodySplit = null;
+				body = null;
+				htmlRecord = null;
+				doc = null;
 			    //break;
 		    }
 		}

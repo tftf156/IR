@@ -5,6 +5,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,13 +17,17 @@ import javax.swing.event.CaretListener;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 
 
 public class LuceneSearch {
@@ -50,11 +55,12 @@ public class LuceneSearch {
 
 		// 1，把要搜索的文本解析为 Query
 		String[] fields = { "Title", "content" };
-		QueryParser queryParser = new MultiFieldQueryParser(fields, analyzer);
+		QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_47, fields, analyzer);
 		Query query = queryParser.parse(queryString);
 
 		// 2，进行查询，从索引库中查找
-		IndexSearcher indexSearcher = new IndexSearcher(indexpath);
+		IndexReader reader = DirectoryReader.open(FSDirectory.open(new File(indexpath)));
+		IndexSearcher indexSearcher = new IndexSearcher(reader);
 		Filter filter = null;
 		TopDocs topDocs = indexSearcher.search(query, filter, 10000);
 		System.out.println("總共有【" + topDocs.totalHits + "】條匹配結果");
@@ -104,15 +110,15 @@ public class LuceneSearch {
 
 			// 1，把要搜索的文本解析为 Query
 			String[] fields = { "Title", "content" };
-			QueryParser queryParser = new MultiFieldQueryParser(fields, analyzer);
+			QueryParser queryParser = new MultiFieldQueryParser(Version.LUCENE_47, fields, analyzer);
 			Query query = queryParser.parse(queryString);
 
 			// 2，进行查询，从索引库中查找
-			IndexSearcher indexSearcher = new IndexSearcher(indexpath);
+			IndexReader reader = DirectoryReader.open(FSDirectory.open(new File(indexpath)));
+			IndexSearcher indexSearcher = new IndexSearcher(reader);
 			Filter filter = null;
 			TopDocs topDocs = indexSearcher.search(query, filter, 10);
 
-			int count = 1;
 			// 3，打印结果
 			for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
 				// 文档内部编号
@@ -125,7 +131,6 @@ public class LuceneSearch {
 				}
 				/*System.out.println("size = " + NumberTools.stringToLong(doc.get("size")));
 	          	System.out.println("path = " + doc.get("path"));*/
-				count++;
 			}
 		}
 		return words;

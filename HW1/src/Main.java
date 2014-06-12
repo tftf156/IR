@@ -1,12 +1,9 @@
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,20 +12,20 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.util.Version;
 
 
 public class Main{
 	
 	static String indexPath = "../../index";
 	static LuceneSearch luceneSearch;
-	static Analyzer analyzer = new StandardAnalyzer();
+	static Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
 	private static JFrame frame;
 
 	static JButton searchButton = new JButton("Search");
@@ -167,6 +164,7 @@ public class Main{
 	            ranking(keyword);
 	            listKeywordRanking();
 				luceneSearch.search(keyword);
+				//luceneSearch.doPagingSearch(in, searcher, query, hitsPerPage, raw, interactive)
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

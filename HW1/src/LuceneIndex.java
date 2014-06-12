@@ -1,18 +1,20 @@
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Date;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 
@@ -20,7 +22,7 @@ public class LuceneIndex{
 	
 	static String filePath = "../../file/08.warc";
 	static String indexPath = "../../index";
-	static Analyzer analyzer = new StandardAnalyzer();
+	static Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_47);
 	  
 	public static void main(String args[])throws IOException 
 	{
@@ -39,12 +41,13 @@ public class LuceneIndex{
 		FileInputStream fileInputStream = new FileInputStream(filePath);
 		// cast to a data input stream
 		DataInputStream inStream=new DataInputStream(fileInputStream);
-		Directory fsDir = FSDirectory.getDirectory(indexPath);
+		Directory fsDir = FSDirectory.open(new File(indexPath));
 	    //1、启动时读取
-	    Directory ramDir = new RAMDirectory(fsDir);
+	    Directory ramDir = new RAMDirectory(fsDir, null);
 	        
 	    // 运行程序时操作ramDir
-	    IndexWriter ramIndexWriter = new IndexWriter(ramDir, analyzer, MaxFieldLength.LIMITED);
+	    IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_47, analyzer);
+	    IndexWriter ramIndexWriter = new IndexWriter(ramDir, iwc);
 	        
 		// iterate through our stream
 		WarcRecord thisWarcRecord;
@@ -76,12 +79,12 @@ public class LuceneIndex{
 			    // 添加 Document
 			    org.apache.lucene.document.Document document = new org.apache.lucene.document.Document();
 			    //文件名称
-			    document.add(new Field("URL", thisTargetURI, Store.YES, Index.ANALYZED));
+			    document.add(new StoredField("URL", thisTargetURI));
 			    //检索到的内容
-			    document.add(new Field("Title", titleString, Store.YES, Index.ANALYZED));
+			    document.add(new TextField("Title", titleString, Store.YES));
 			    //文件大小
-			    document.add(new Field("content", bodyText, Store.YES, Index.ANALYZED));
-			    document.add(new Field("html", thisContentString, Store.YES, Index.ANALYZED));
+			    document.add(new StoredField("content", bodyText));
+			    document.add(new StoredField("html", thisContentString));
 			    ramIndexWriter.addDocument(document);
 			    thisWarcRecord = null;
 				content = null;
@@ -97,12 +100,12 @@ public class LuceneIndex{
 	    ramIndexWriter.close();
 	        
 	    //2、退出时保存
-	    IndexWriter fsIndexWriter = new IndexWriter(fsDir, analyzer, true, MaxFieldLength.LIMITED);
-	    fsIndexWriter.addIndexesNoOptimize(new Directory[]{ramDir});
+	    IndexWriterConfig fsIwc = new IndexWriterConfig(Version.LUCENE_47, analyzer);
+	    IndexWriter fsIndexWriter = new IndexWriter(fsDir, fsIwc);
+	    fsIndexWriter.addIndexes(new Directory[]{ramDir});
 	        
 	    // 优化操作
 	    fsIndexWriter.commit();
-	    fsIndexWriter.optimize();
 	        
 	    fsIndexWriter.close();
 	}

@@ -16,6 +16,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 
@@ -42,71 +43,76 @@ public class Main{
 	}  
 	
 	public static void main(String args[])throws IOException { 
-		Main main = new Main();
-		
-		luceneSearch = new LuceneSearch(indexPath, analyzer);
-		frame = new JFrame();
-		frame.setSize(600, 600);
-        frame.setLayout(new GridBagLayout());
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-          
-        
-        GridBagConstraints c1 = new GridBagConstraints();
-        c1.gridx = 0;
-        c1.gridy = 0;
-        c1.gridwidth = 5;
-        c1.gridheight = 1;
-        c1.weightx = 1;
-        c1.weighty = 0;
-        c1.fill = GridBagConstraints.BOTH;
-        c1.anchor = GridBagConstraints.WEST;
-        frame.add(searchTextField, c1);
-        GridBagConstraints c2 = new GridBagConstraints();
-        c2.gridx = 3;
-        c2.gridy = 1;
-        c2.gridwidth = 2;
-        c2.gridheight = 1;
-        c2.weightx = 0;
-        c2.weighty = 0;
-        c2.fill = GridBagConstraints.NONE;
-        c2.anchor = GridBagConstraints.CENTER;
-        frame.add(searchButton, c2);
-        GridBagConstraints c3 = new GridBagConstraints();
-        c3.gridx = 0;
-        c3.gridy = 2;
-        c3.gridwidth = 2;
-        c3.gridheight = 1;
-        c3.weightx = 0;
-        c3.weighty = 0;
-        c3.fill = GridBagConstraints.NONE;
-        c3.anchor = GridBagConstraints.CENTER;
-        frame.add(keywordRankingListJLabel, c3);
-        
-        searchButton.addActionListener(main.new InputListener());
-        frame.setVisible(true);
-        
-        autoSuggestor = new AutoSuggestor(searchTextField, frame, null, Color.WHITE.brighter(), Color.BLUE, Color.RED, 0.75f) {
-            @Override
-            boolean wordTyped(String typedWord) {
+		final Main main = new Main();
+		SwingUtilities.invokeLater(new Runnable()
+		{
+			public void run()
+			{
+				luceneSearch = new LuceneSearch(indexPath, analyzer);
+				frame = new JFrame();
+				frame.setSize(600, 600);
+		        frame.setLayout(new GridBagLayout());
+		        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		          
+		        
+		        GridBagConstraints c1 = new GridBagConstraints();
+		        c1.gridx = 0;
+		        c1.gridy = 0;
+		        c1.gridwidth = 5;
+		        c1.gridheight = 1;
+		        c1.weightx = 1;
+		        c1.weighty = 0;
+		        c1.fill = GridBagConstraints.BOTH;
+		        c1.anchor = GridBagConstraints.WEST;
+		        frame.add(searchTextField, c1);
+		        GridBagConstraints c2 = new GridBagConstraints();
+		        c2.gridx = 3;
+		        c2.gridy = 1;
+		        c2.gridwidth = 2;
+		        c2.gridheight = 1;
+		        c2.weightx = 0;
+		        c2.weighty = 0;
+		        c2.fill = GridBagConstraints.NONE;
+		        c2.anchor = GridBagConstraints.CENTER;
+		        frame.add(searchButton, c2);
+		        GridBagConstraints c3 = new GridBagConstraints();
+		        c3.gridx = 0;
+		        c3.gridy = 2;
+		        c3.gridwidth = 2;
+		        c3.gridheight = 1;
+		        c3.weightx = 0;
+		        c3.weighty = 0;
+		        c3.fill = GridBagConstraints.NONE;
+		        c3.anchor = GridBagConstraints.CENTER;
+		        frame.add(keywordRankingListJLabel, c3);
+		        
+		        searchButton.addActionListener(main.new InputListener());
+		        frame.setVisible(true);
+		        
+		        autoSuggestor = new AutoSuggestor(searchTextField, frame, null, Color.WHITE.brighter(), Color.BLUE, Color.RED, 0.75f) {
+		            @Override
+		            boolean wordTyped(String typedWord) {
 
-                //create list for dictionary this in your case might be done via calling a method which queries db and returns results as arraylist
-            	try {
-            		ArrayList<String> words = luceneSearch.searchArray(searchTextField.getText());
-            		for(String word : words)
-            		{
-            			System.out.println(word);
-            		}
-                    setDictionary(words);
-    			} catch (Exception e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
-    			}
-                
-                //addToDictionary("bye");//adds a single word
+		                //create list for dictionary this in your case might be done via calling a method which queries db and returns results as arraylist
+		            	try {
+		            		ArrayList<String> words = luceneSearch.searchArray(searchTextField.getText());
+		            		for(String word : words)
+		            		{
+		            			System.out.println(word);
+		            		}
+		                    setDictionary(words);
+		    			} catch (Exception e) {
+		    				// TODO Auto-generated catch block
+		    				e.printStackTrace();
+		    			}
+		                
+		                //addToDictionary("bye");//adds a single word
 
-                return super.wordTyped(typedWord);//now call super to check for any matches against newest dictionary
-            }
-        };
+		                return super.wordTyped(typedWord);//now call super to check for any matches against newest dictionary
+		            }
+		        };
+			}
+		});
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })

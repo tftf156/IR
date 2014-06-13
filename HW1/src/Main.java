@@ -34,6 +34,7 @@ public class Main{
 	static ArrayList<KeywordRanking> keywordRankingArrayList = new ArrayList<KeywordRanking>();
 	static AutoSuggestor autoSuggestor;
 	
+	
 	class KeywordRanking  {  
 	       String keyword;  
 	       int count;  

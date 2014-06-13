@@ -35,6 +35,7 @@ public class Main{
 	static AutoSuggestor autoSuggestor;
 	
 	
+	
 	class KeywordRanking  {  
 	       String keyword;  
 	       int count;  
